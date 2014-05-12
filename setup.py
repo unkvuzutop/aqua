@@ -6,7 +6,12 @@ if sys.version_info < (3,4):
 
 setup(
     name = 'Aqua',
+    version = '0.1.5dev',
+    package_dir = {'aqua': 'aqua'},
     author = 'Alexey Poryadin',
     author_email = 'alexey.poryadin@gmail.com',
     description = 'Async HTTP based on asyncio.',
+    install_requires = [
+        'webob'
+    ],    
 )

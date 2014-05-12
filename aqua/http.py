@@ -20,6 +20,7 @@ import sys
 import webob
 import asyncio
 import logging
+from webob import Response
 
 logger = logging.getLogger('aqua.error')
 
@@ -46,7 +47,7 @@ class Request(webob.Request):
         :param process_callback: A callback that accepts two parameters:
             size of already loaded part of body and full body size.
         """
-        total = int(environ['CONTENT_LENGTH'])
+        total = self.content_length
         while not self.environ['aqua.complete']:
             if process_callback is not None:
                 size = 0 if 'wsgi.input' not in self.environ else self.environ['wsgi.input'].tell()
@@ -138,7 +139,6 @@ class Connection(object):
         See more :meth:`asyncio.BaseProtocol.connection_lost`."""
         if exc is not None:
             self.warinig("Connection closed by: {0}".format(exc))
-        self.transport.close()
 
 
     def connection_timeout(self):
@@ -255,18 +255,18 @@ class Connection(object):
                 close_connection = (self._environ['SERVER_PROTOCOL']<'HTTP/1.1')
         else:
             close_connection = True
-        self.transport.write("{0} {1}\r\n".format(self._environ['SERVER_PROTOCOL'], status).encode('ISO-8859-1'))
+        self.transport.write("{0} {1}\r\n".format(self._environ['SERVER_PROTOCOL'], status).encode('UTF-8'))
         for name, value in headers:
             if not close_connection and name=='Connection':
                 close_connection = (value=='close')
-            self.transport.write('{0}: {1}\r\n'.format(name, value).encode('ISO-8859-1'))
+            self.transport.write('{0}: {1}\r\n'.format(name, value).encode('UTF-8'))
         self.transport.write(b'\r\n')
         for data in app_iter:
             self.transport.write(data)
         if close_connection:
             self.transport.close()
         else:
-            self._reset_state()
+            self._environ = None
             self.timeout = self.keepalive_timeout
 
 
@@ -281,7 +281,7 @@ def parse_environ(data):
     if version not in (b'HTTP/1.0',b'HTTP/1.1'):
         raise Error('505 HTTP Version Not Supported')
     parts = uri.split(b'?', 1)
-    path, query = parts if len(parts)==2 else parts[0], b''
+    path, query = parts[0], parts[1] if len(parts)==2 else b''
     try:
         atoms = [unquote_bytes(x) for x in _quoted_slash.split(path)]
     except ValueError:
@@ -289,9 +289,9 @@ def parse_environ(data):
     path = b'%2F'.join(atoms)
     result = dict(
         zip(('REQUEST_METHOD','REQUEST_URI','SERVER_PROTOCOL','SCRIPT_NAME', 'PATH_INFO', 'QUERY_STRING'),
-             map(lambda item: item.decode('ISO-8859-1') ,(method, uri, version, b'', path, query))))
+             map(lambda item: item.decode('UTF-8') ,(method, uri, version, b'', path, query))))
     name = None
-    for item in map(lambda item: item.decode('ISO-8859-1'), lines[1:]):
+    for item in map(lambda item: item.decode('UTF-8'), lines[1:]):
         if item=='':
             break
         elif item[0] in (' ', '\t'):

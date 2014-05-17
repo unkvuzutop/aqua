@@ -103,3 +103,13 @@ class Application(BaseApplication):
         connection.request_handler = self.request_router
         connection.default_environ.update(self._app_environ)
         return connection
+
+    def sub_application(self, script_name, application_class):
+        """ Binds sub application
+        
+        :param script_name: SCRIPT_NAME for sub application.
+        :param application_class: Class of sub application.
+        """
+        assert issubclass(application_class, BaseApplication)
+        app = application_class(self.loop, script_name)
+        self._router.update(script_name, app._router)

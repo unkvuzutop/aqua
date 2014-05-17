@@ -23,7 +23,7 @@ class TestApplication(Application):
 
 loop = asyncio.get_event_loop()
 app = TestApplication(asyncio.get_event_loop(), server_name='localhost')
-#app.add_application('/sub/hello', SubApplication)
+app.sub_application('/sub/hello', SubApplication)
     
 def test_Router():
     
@@ -76,15 +76,14 @@ def test_Router():
         assert result[0]=='405 Method Not Allowed'
         assert ('Allow', 'GET') in result[1]
 
-    #@asyncio.coroutine
-    #def test_06():
-    #    environ = dict(app._app_environ.items())
-    #    environ['REQUEST_METHOD'] = 'GET'
-    #    environ['PATH_INFO'] = '/sub/hello/ivan'
-    #    result = yield from app.request_router(environ)
-    #    print(result)
-    #    #assert result==('200 OK', [('Content-Type', 'application/json; charset=UTF-8'), ('Content-Length', '15')], [b'{"name":"Ivan"}'])
-
+    @asyncio.coroutine
+    def test_06():
+        environ = dict(app._app_environ.items())
+        environ['REQUEST_METHOD'] = 'GET'
+        environ['PATH_INFO'] = '/sub/hello/ivan'
+        result = yield from app.request_router(environ)
+        print(result)
+        assert result==('200 OK', [('Content-Type', 'text/html; charset=UTF-8'), ('Content-Length', '12')], [b'Hello, Ivan!'])
 
     
     loop.run_until_complete(asyncio.async(test_01()))
@@ -93,7 +92,7 @@ def test_Router():
     loop.run_until_complete(asyncio.async(test_03()))
     loop.run_until_complete(asyncio.async(test_04()))
     loop.run_until_complete(asyncio.async(test_05()))
-    #loop.run_until_complete(asyncio.async(test_06()))
+    loop.run_until_complete(asyncio.async(test_06()))
 
 
 def test_url_for():
@@ -103,10 +102,10 @@ def test_url_for():
     assert app.url_for('foo', name='ivan') is None
     assert app.url_for('index', name='ivan') is None
     
-    #assert app.url_for('sub:hello:index')=='/sub/hello'
-    #assert app.url_for('sub:hello:index', name='ivan')=='/sub/hello/ivan'
-    #assert app.url_for('sub:hello:hello', name='ivan') is None
-    #assert app.url_for('sub:foo:index', name='ivan') is None
+    assert app.url_for('sub:hello:index')=='/sub/hello'
+    assert app.url_for('sub:hello:index', name='ivan')=='/sub/hello/ivan'
+    assert app.url_for('sub:hello:hello', name='ivan') is None
+    assert app.url_for('sub:foo:index', name='ivan') is None
 
 if __name__ == '__main__':
     

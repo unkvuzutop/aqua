@@ -17,9 +17,9 @@ class _RouteItem(object):
     def __call__(self, split_path, method):
         """ Route resolver"""
         item = self.methods.get(method, (None,))
-        view, argnames = item[0], item[1:]
-        if view is not None and len(argnames)>=len(split_path):
-            return view, dict(zip_longest(argnames, split_path)) # view found
+        endpoint, argnames = item[0], item[1:]
+        if endpoint is not None and len(argnames)>=len(split_path):
+            return endpoint, dict(zip_longest(argnames, split_path)) # endpoint found
         elif self.routes is not None and len(split_path)>0 and split_path[0] in self.routes:
             return self.routes[split_path[0]](split_path[1:], method) # has subroute item
         else:
@@ -29,21 +29,28 @@ class _RouteItem(object):
                 return None, () # 404
 
     
-    def add(self, split_path, method, view, *argnames):
+    def add(self, split_path, method, endpoint, *argnames):
         """ Adds route item"""
         if len(split_path)==0:
-            if method in self.methods:
-                raise ValueError("Route with some method already exists.")
-            if len(argnames)>0:
-                if self.routes is not None and len(self.routes)>0:
-                    raise ValueError("Route with some part of path already exists.")
-                self.routes = None
-            self.methods[method] = (view,)+argnames
+            if method is not None:
+                if method in self.methods:
+                    raise ValueError("Route with some method already exists.")
+                if len(argnames)>0:
+                    if self.routes is not None and len(self.routes)>0:
+                        raise ValueError("Route with some part of path already exists.")
+                    self.routes = None
+                self.methods[method] = (endpoint,)+argnames
+            else:
+                if len(self.methods)==0 and len(self.routes)==0:
+                    self.methods = endpoint.methods
+                    self.routes = endpoint.routes
+                else:
+                    raise ValueError("Route with some part of `script_name` already exists.")
         else:
             if self.routes is not None:
                 if split_path[0] not in self.routes:
                     self.routes[split_path[0]] = _RouteItem()
-                self.routes[split_path[0]].add(split_path[1:], method, view, *argnames)
+                self.routes[split_path[0]].add(split_path[1:], method, endpoint, *argnames)
             else:
                 raise ValueError("Route with some part of path already exists.")
 
@@ -124,4 +131,21 @@ class TraversalRouter(object):
                             break
         if result is not None:
             result = '/'.join(result)
-        return result            
+        return result
+    
+    def update(self, script_name, sub_router):
+        assert isinstance(sub_router, TraversalRouter)
+        split_path = script_name.split('/')[1:]
+        split_path = [] if split_path==[''] else split_path
+        if len(split_path)!=0:
+            self._routes.add(split_path, None, sub_router._routes)
+        else:
+            raise ValueError("Wrong value '{0}' in parameter 'script_name'".format(script_name))
+        # views
+        for view_name, value in sub_router._views.items():
+            view_name = ':'.join(split_path)+':'+view_name
+            for N in range(len(value)):
+                path, argnames = value[N][0], value[N][1:]
+                path = script_name if path=='/' else script_name+path
+                value[N] = (path,) + argnames
+            self._views[view_name] = value        

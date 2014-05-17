@@ -24,66 +24,85 @@ class TestApplication(Application):
 loop = asyncio.get_event_loop()
 app = TestApplication(asyncio.get_event_loop(), server_name='localhost')
 app.sub_application('/sub/hello', SubApplication)
+
+class Connection(object):
+    """"""
     
 def test_Router():
+    
+    connection = Connection()
     
     @asyncio.coroutine
     def test_01():
         environ = dict(app._app_environ.items())
         environ['REQUEST_METHOD'] = 'GET'
         environ['PATH_INFO'] = '/'
-        result = yield from app.request_router(environ)
-        assert result==('200 OK', [('Content-Type', 'text/html; charset=UTF-8'), ('Content-Length', '5')], [b'Index'])
+        def response(*args):
+            assert args==('200 OK', [('Content-Type', 'text/html; charset=UTF-8'), ('Content-Length', '5')], [b'Index'])
+        connection.response = response
+        yield from app.request_router(connection, environ)
+        
 
     @asyncio.coroutine
     def test_02():
         environ = dict(app._app_environ.items())
         environ['REQUEST_METHOD'] = 'GET'
         environ['PATH_INFO'] = '/user/ivan'
-        result = yield from app.request_router(environ)
-        assert result==('200 OK', [('Content-Type', 'application/json; charset=UTF-8'), ('Content-Length', '15')], [b'{"name":"Ivan"}'])
+        def response(*args):
+            assert args==('200 OK', [('Content-Type', 'application/json; charset=UTF-8'), ('Content-Length', '15')], [b'{"name":"Ivan"}'])
+        connection.response = response
+        yield from app.request_router(connection, environ)
 
     @asyncio.coroutine
     def test_02a():
         environ = dict(app._app_environ.items())
         environ['REQUEST_METHOD'] = 'GET'
         environ['PATH_INFO'] = '/user'
-        result = yield from app.request_router(environ)
-        assert result==('200 OK', [('Content-Type', 'application/json; charset=UTF-8'), ('Content-Length', '13')], [b'{"name":null}'])
+        def response(*args):
+            assert args==('200 OK', [('Content-Type', 'application/json; charset=UTF-8'), ('Content-Length', '13')], [b'{"name":null}'])
+        connection.response = response
+        yield from app.request_router(connection, environ)
 
     @asyncio.coroutine
     def test_03():
         environ = dict(app._app_environ.items())
         environ['REQUEST_METHOD'] = 'GET'
         environ['PATH_INFO'] = '/binary'
-        result = yield from app.request_router(environ)
-        assert result==('200 OK', [('Content-Type', 'application/octet-stream; charset=UTF-8'), ('Content-Length', '5')], [b'\t\t\t\t\t'])
+        def response(*args):
+            assert args==('200 OK', [('Content-Type', 'application/octet-stream; charset=UTF-8'), ('Content-Length', '5')], [b'\t\t\t\t\t'])
+        connection.response = response
+        yield from app.request_router(connection, environ)
 
     @asyncio.coroutine
     def test_04():
         environ = dict(app._app_environ.items())
         environ['REQUEST_METHOD'] = 'GET'
         environ['PATH_INFO'] = '/foo'
-        result = yield from app.request_router(environ)
-        assert result[0]=='404 Not Found'
+        def response(*args):
+            assert args[0]=='404 Not Found'
+        connection.response = response
+        yield from app.request_router(connection, environ)
         
     @asyncio.coroutine
     def test_05():
         environ = dict(app._app_environ.items())
         environ['REQUEST_METHOD'] = 'POST'
         environ['PATH_INFO'] = '/'
-        result = yield from app.request_router(environ)
-        assert result[0]=='405 Method Not Allowed'
-        assert ('Allow', 'GET') in result[1]
+        def response(*args):
+            assert args[0]=='405 Method Not Allowed'
+            assert ('Allow', 'GET') in args[1]
+        connection.response = response
+        yield from app.request_router(connection, environ)
 
     @asyncio.coroutine
     def test_06():
         environ = dict(app._app_environ.items())
         environ['REQUEST_METHOD'] = 'GET'
         environ['PATH_INFO'] = '/sub/hello/ivan'
-        result = yield from app.request_router(environ)
-        print(result)
-        assert result==('200 OK', [('Content-Type', 'text/html; charset=UTF-8'), ('Content-Length', '12')], [b'Hello, Ivan!'])
+        def response(*args):
+            assert args==('200 OK', [('Content-Type', 'text/html; charset=UTF-8'), ('Content-Length', '12')], [b'Hello, Ivan!'])
+        connection.response = response
+        yield from app.request_router(connection, environ)
 
     
     loop.run_until_complete(asyncio.async(test_01()))

@@ -67,10 +67,11 @@ class BaseApplication(object):
                     self.add_route(route, method, value, **options)
 
     @asyncio.coroutine
-    def request_router(self, environ):
+    def request_router(self, connection, environ):
         """ Routes and handles Request
         
         :param environ: Request environ variables.
+        :param connection: Instanse of :class:`aqua.http.Connection`
         :rtype: Tuple or list of three items. See parameters of :meth:`aqua.http.Connection.response` for more info.
         """
         try:
@@ -94,7 +95,7 @@ class BaseApplication(object):
                 response = result
         else:
             response = result
-        return request.call_application(response)  
+        connection.response(*request.call_application(response))
 
 
 class Application(BaseApplication):

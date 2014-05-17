@@ -38,10 +38,10 @@ def test_RequestProcess():
     loop = asyncio.get_event_loop()
 
     @asyncio.coroutine
-    def request_handler_head(environ):
+    def request_handler_head(connection, environ):
         assert environ.get('REQUEST_METHOD')=='HEAD'
         assert environ.get('SERVER_PROTOCOL')=='HTTP/1.0'
-        assert environ.get('PATH_INFO')=='/wiki/HTTP Запрос'
+        assert environ.get('PATH_INFO').encode('ISO-8859-1').decode('UTF-8')=='/wiki/HTTP Запрос'
         assert environ.get('QUERY_STRING')=='last=Y&K'
         assert environ.get('REMOTE_ADDR')=='athost'
         assert environ.get('SERVER_NAME')=='myhost'
@@ -49,10 +49,10 @@ def test_RequestProcess():
         assert environ.get('HTTP_HOST')=='ru.wikipedia.org'
         assert environ.get('HTTP_SET_COOKIE')=='c1=100; path=/; domain=localhost, c5=500; path=/; domain=localhost'
         assert environ.get('aqua.complete')==True
-        return '200 OK', [('Content-Length','text/plain'), ('Content-Length','13')], [b'Hello, World!']
+        connection.response('200 OK', [('Content-Length','text/plain'), ('Content-Length','13')], [b'Hello, World!'])
     
     @asyncio.coroutine
-    def request_handler_post(environ):
+    def request_handler_post(connection, environ):
         assert environ.get('REQUEST_METHOD')=='POST'
         assert environ.get('SERVER_PROTOCOL')=='HTTP/1.1'
         assert environ.get('PATH_INFO')=='/wiki/article'
@@ -66,7 +66,7 @@ def test_RequestProcess():
         )
         assert environ.get('aqua.complete')==True
         assert request.body == b'0123456789\r\n'*4+b'\r\n'
-        return '200 OK', [], []
+        connection.response('200 OK', [], [])
 
     
     def factory():

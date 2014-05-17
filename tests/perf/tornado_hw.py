@@ -40,16 +40,33 @@ Shortest transaction:	        0.01
 """
 $ siege -c 500 -b -r 100 http://127.0.0.1:5002/
 
-Transactions:		       49949 hits
+Transactions:		       49952 hits
 Availability:		       99.90 %
-Elapsed time:		       56.28 secs
-Data transferred:	      634.12 MB
-Response time:		        0.41 secs
-Transaction rate:	      887.51 trans/sec
-Throughput:		       11.27 MB/sec
-Concurrency:		      359.97
-Successful transactions:       49949
-Failed transactions:	          51
-Longest transaction:	       26.75
+Elapsed time:		       48.48 secs
+Data transferred:	      634.16 MB
+Response time:		        0.40 secs
+Transaction rate:	     1030.36 trans/sec
+Throughput:		       13.08 MB/sec
+Concurrency:		      408.49
+Successful transactions:       49952
+Failed transactions:	          48
+Longest transaction:	       16.22
+Shortest transaction:	        0.01
+"""
+
+"""
+$ siege -c 1000 -b -r 100 http://127.0.0.1:5002/
+
+Transactions:		       99498 hits
+Availability:		       99.50 %
+Elapsed time:		       88.90 secs
+Data transferred:	     1263.16 MB
+Response time:		        0.57 secs
+Transaction rate:	     1119.21 trans/sec
+Throughput:		       14.21 MB/sec
+Concurrency:		      640.26
+Successful transactions:       99498
+Failed transactions:	         502
+Longest transaction:	       17.55
 Shortest transaction:	        0.01
 """

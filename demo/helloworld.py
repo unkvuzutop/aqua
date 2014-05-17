@@ -6,6 +6,7 @@ class SampleApplication(Application):
     
     @handler('/:user')
     def hello(self, request, user):
+        yield from asyncio.sleep(2.0)
         return "Hello, {0}!".format("World" if user is None else user.capitalize()) 
 
 if __name__ == '__main__':

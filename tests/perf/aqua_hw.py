@@ -30,32 +30,48 @@ $ siege -c 100 -b -r 100 http://127.0.0.1:5000/
 
 Transactions:		       10000 hits
 Availability:		      100.00 %
-Elapsed time:		        5.90 secs
+Elapsed time:		        5.58 secs
 Data transferred:	      126.95 MB
 Response time:		        0.06 secs
-Transaction rate:	     1694.92 trans/sec
-Throughput:		       21.52 MB/sec
-Concurrency:		       98.91
+Transaction rate:	     1792.11 trans/sec
+Throughput:		       22.75 MB/sec
+Concurrency:		       99.08
 Successful transactions:       10000
 Failed transactions:	           0
-Longest transaction:	        0.09
+Longest transaction:	        0.07
 Shortest transaction:	        0.01
 """
 
 """
 $ siege -c 500 -b -r 000 http://127.0.0.1:5000/
 
-Transactions:		       34567 hits
-Availability:		       96.78 %
-Elapsed time:		       31.16 secs
-Data transferred:	      438.84 MB
-Response time:		        0.17 secs
-Transaction rate:	     1109.34 trans/sec
-Throughput:		       14.08 MB/sec
-Concurrency:		      186.88
-Successful transactions:       34567
-Failed transactions:	        1151
-Longest transaction:	       30.08
-Shortest transaction:	        0.02
+Transactions:		       49709 hits
+Availability:		       99.42 %
+Elapsed time:		       34.42 secs
+Data transferred:	      631.07 MB
+Response time:		        0.14 secs
+Transaction rate:	     1444.19 trans/sec
+Throughput:		       18.33 MB/sec
+Concurrency:		      197.66
+Successful transactions:       49709
+Failed transactions:	         291
+Longest transaction:	       30.76
+Shortest transaction:	        0.00
+"""
 
+"""
+$ siege -c 1000 -b -r 000 http://127.0.0.1:5000/
+
+Transactions:		       61921 hits
+Availability:		       97.99 %
+Elapsed time:		       80.38 secs
+Data transferred:	      786.11 MB
+Response time:		        0.76 secs
+Transaction rate:	      770.35 trans/sec
+Throughput:		        9.78 MB/sec
+Concurrency:		      588.02
+Successful transactions:       61921
+Failed transactions:	        1267
+Longest transaction:	       40.76
+Shortest transaction:	        0.00
 """

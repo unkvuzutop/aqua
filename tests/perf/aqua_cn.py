@@ -4,9 +4,8 @@ import aqua.http
 
 class SampleConnection(aqua.http.Connection):
     
-    @asyncio.coroutine
-    def request_handler(self, environ):
-        return ('200 OK',
+    def request_handler(self, connection, environ):
+        connection.response('200 OK',
                 [('Content-Type', 'text/html; charset=UTF-8'),
                  ('Content-Length', str(13*1024)),
                  ('Date','Sat, 17 May 2014 19:05:24 GMT'),
@@ -29,20 +28,20 @@ if __name__ == '__main__':
 $ siege -c 100 -b -r 100 http://127.0.0.1:5001/
 Transactions:		       10000 hits
 Availability:		      100.00 %
-Elapsed time:		        4.33 secs
+Elapsed time:		        3.13 secs
 Data transferred:	      126.95 MB
-Response time:		        0.04 secs
-Transaction rate:	     2309.47 trans/sec
-Throughput:		       29.32 MB/sec
-Concurrency:		       97.68
+Response time:		        0.03 secs
+Transaction rate:	     3194.89 trans/sec
+Throughput:		       40.56 MB/sec
+Concurrency:		       98.70
 Successful transactions:       10000
 Failed transactions:	           0
-Longest transaction:	        0.22
-Shortest transaction:	        0.00
+Longest transaction:	        0.06
+Shortest transaction:	        0.02
 """
 
 """
-$ siege -c 500 -b -r 000 http://127.0.0.1:5001/
+$ siege -c 500 -b -r 1000 http://127.0.0.1:5001/
 
 Transactions:		       49845 hits
 Availability:		       99.69 %
@@ -60,18 +59,21 @@ Shortest transaction:	        0.01
 
 
 """
-$ siege -c 1000 -b -r 000 http://127.0.0.1:5001/
+$ siege -c 1000 -b -r 1000 http://127.0.0.1:5001/
 
-Transactions:		       68971 hits
-Availability:		       98.37 %
-Elapsed time:		       78.42 secs
-Data transferred:	      875.61 MB
-Response time:		        0.50 secs
-Transaction rate:	      879.51 trans/sec
-Throughput:		       11.17 MB/sec
-Concurrency:		      438.53
-Successful transactions:       68971
-Failed transactions:	        1144
-Longest transaction:	       40.04
+Transactions:		       99165 hits
+Availability:		       99.17 %
+Elapsed time:		       54.65 secs
+Data transferred:	     1258.93 MB
+Response time:		        0.41 secs
+Transaction rate:	     1814.55 trans/sec
+Throughput:		       23.04 MB/sec
+Concurrency:		      743.62
+Successful transactions:       99165
+Failed transactions:	         835
+Longest transaction:	        7.03
 Shortest transaction:	        0.00
+
 """
+
+

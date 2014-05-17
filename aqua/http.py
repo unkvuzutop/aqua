@@ -66,7 +66,7 @@ class Connection(asyncio.Protocol):
     """
     
     first_timeout = 0.2      #: Timeout for start reading first request from connection.
-    request_timeout = 2.0    #: Timeout for reading a request headers and body.
+    request_timeout = 5.0    #: Timeout for reading a request headers and body.
     keepalive_timeout = 3.0  #: Timeout for waiting next request if connection is not been closed.
     #: Default request environ variables.
     default_environ = dict([
@@ -170,9 +170,10 @@ class Connection(asyncio.Protocol):
                             self.timeout = 0
                     else:
                         self._environ['aqua.complete'] = True
-                    future = asyncio.Future()
-                    asyncio.Task(self._request_handler(future))
-                    future.add_done_callback(lambda future: self.response(*future.result()))
+                    if asyncio.iscoroutinefunction(self.request_handler):
+                        asyncio.Task(self.request_handler(self, self._environ))
+                    else:
+                        self.request_handler(self, self._environ)
             else:
                 self.body_chunk_received(self._environ, data)
         except Error as exc:
@@ -190,26 +191,13 @@ class Connection(asyncio.Protocol):
         self.timeout = self.request_timeout
     
 
-    @asyncio.coroutine
-    def _request_handler(self, future):
-        try:
-            result = yield from self.request_handler(self._environ)
-        except Error as exc:
-            result = exc.args
-        except Exception as exc:
-            self.exception('Uncaught exception when processing request:')
-            result = '500 Internal Server Error', [], []
-        future.set_result(result)
-    
-        
-    @asyncio.coroutine
-    def request_handler(self, environ):
+    def request_handler(self, connection, environ):
         """ Request handler. Must be overriden.
         
         :param environ: Request environ variables.
         :rtype: Tuple or list of three items. See parameters of :meth:`Connection.response` for more info.
         """
-        return '501 Not Implemented', [], []        
+        connection.response('501 Not Implemented', [], [])
 
 
     def expect_continue(self, environ):

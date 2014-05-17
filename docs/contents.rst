@@ -1,9 +1,12 @@
 .. toctree::
     :maxdepth: 2
 
-.. automodule:: aqua.http
+.. automodule:: aqua.app
     :members:
-
+.. automodule:: aqua.router
+    :members:
+.. automodule:: aqua.http
+    :members:    
 
 Indices and tables
 ==================

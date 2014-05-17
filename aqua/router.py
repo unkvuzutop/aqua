@@ -114,6 +114,12 @@ class TraversalRouter(object):
 
             
     def url_for(self, view_name, **kwargs):
+        """ Returns URL for request endpoint (view)
+        
+        :param view_name: View name.
+        :param kwargs: Urlvars as keyword arguments.
+        :rtype: String contains reconstructed URL.
+        """
         result = None
         found_none = False
         for item in self._views.get(view_name, list()):
@@ -134,6 +140,13 @@ class TraversalRouter(object):
         return result
     
     def update(self, script_name, sub_router):
+        """ Updates current routers with info from sub routes. It is need for bins sub application.
+        :param script_name: SCRIPT_NAME of sub applications.
+        :param sub_router: Router of sub applications.
+        
+        All routes of sub applications moves with prefix equal `script_name` parameter.
+        All views of sub applications moves with prefix equal `script_name` value where '/' is replaced by ':'.
+        """
         assert isinstance(sub_router, TraversalRouter)
         split_path = script_name.split('/')[1:]
         split_path = [] if split_path==[''] else split_path

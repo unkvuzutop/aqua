@@ -7,7 +7,7 @@ as describes :ref:`Transports and protocols (low-level API) <asyncio-protocol>`.
 :class:`aqua.http.Connection` based on :class:`asyncio.Protocol` and can be used
 with :meth:`asyncio.BaseEventLoop.create_server` to create HTTP server.
 
-See the sample application below which demonstrates simple HTTP Application.
+See the sample below which demonstrates using :class:`aqua.http.Connection`.
 
 .. literalinclude:: ../demo/samplecon.py
 
@@ -58,7 +58,7 @@ class Request(webob.Request):
         return 
 
 
-class Connection(object):
+class Connection(asyncio.Protocol):
     """ HTTP Async Connection
     
     :param loop: :mod:`asyncio` event loop instance to use. If not set
@@ -138,7 +138,7 @@ class Connection(object):
         """ Called when incomming HTTP connection is lost.
         See more :meth:`asyncio.BaseProtocol.connection_lost`."""
         if exc is not None:
-            self.warinig("Connection closed by: {0}".format(exc))
+            self.warning("Connection closed by: {0}".format(exc))
 
 
     def connection_timeout(self):
@@ -255,11 +255,11 @@ class Connection(object):
                 close_connection = (self._environ['SERVER_PROTOCOL']<'HTTP/1.1')
         else:
             close_connection = True
-        self.transport.write("{0} {1}\r\n".format(self._environ['SERVER_PROTOCOL'], status).encode('UTF-8'))
+        self.transport.write("{0} {1}\r\n".format(self._environ['SERVER_PROTOCOL'], status).encode('ISO-8859-1'))
         for name, value in headers:
             if not close_connection and name=='Connection':
                 close_connection = (value=='close')
-            self.transport.write('{0}: {1}\r\n'.format(name, value).encode('UTF-8'))
+            self.transport.write('{0}: {1}\r\n'.format(name, value).encode('ISO-8859-1'))
         self.transport.write(b'\r\n')
         for data in app_iter:
             self.transport.write(data)
@@ -289,9 +289,9 @@ def parse_environ(data):
     path = b'%2F'.join(atoms)
     result = dict(
         zip(('REQUEST_METHOD','REQUEST_URI','SERVER_PROTOCOL','SCRIPT_NAME', 'PATH_INFO', 'QUERY_STRING'),
-             map(lambda item: item.decode('UTF-8') ,(method, uri, version, b'', path, query))))
+             map(lambda item: item.decode('ISO-8859-1') ,(method, uri, version, b'', path, query))))
     name = None
-    for item in map(lambda item: item.decode('UTF-8'), lines[1:]):
+    for item in map(lambda item: item.decode('ISO-8859-1'), lines[1:]):
         if item=='':
             break
         elif item[0] in (' ', '\t'):

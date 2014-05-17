@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Aquachat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" type="text/css">
+</head>
+<body>
+    <h3>Aquachat</h3>
+    {% if name %}
+        <h4>Hello, {{name}}</h4>
+        <div id="chatroom">
+            <ul></ul>
+        </div>
+        <form id="message" method="POST">
+            <fieldset>
+                <label>Your message:</label><br/>
+                <textarea type="text" name="message"></textarea><br/>
+                <input type="submit" value="Send">
+            </fieldset>
+        </form>
+    {% else %}
+    <form id="enter" method="POST">
+        <fieldset>
+            <label>Enter your name: <input type="text" name="name" value="guest"></label>
+            <input type="submit" value="Go!">
+        </fieldset>
+    </form>
+    {% endif %}
+<script type="text/javascript" src="http://ajax.microsoft.com/ajax/jquery/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+var last_timestamp = 0;
+var try_connection = 0;
+
+function poll_messages(name, timestamp) {
+    $.ajax({
+        type: "POST",
+        url: "/chat",
+        dataType: "json",
+        data: { name: "{{name}}", timestamp: timestamp }
+    })
+    .done(function( data ) {
+        $.each(data.messages, function(i, item) {
+            $("<li><strong>"+item[0]+":</strong> "+item[1]+"</li>").appendTo("#chatroom ul");
+        });
+        try_connection = 0;
+        last_timestamp = data.timestamp
+        poll_messages(name, last_timestamp);
+    })
+    .fail(function(jqXHR, textStatus, errorThrown) {
+        if (errorThrown) {
+            alert('Server error:' + errorThrown)
+        } else  {
+            alert('Server unavailable')
+        }
+    })
+}
+</script>
+{% if name %}
+<script type="text/javascript">
+$(function() {
+    poll_messages("{{name}}", 0);
+    $("#message").submit(function(event) {
+        event.preventDefault();
+        $.ajax({
+            url: "/user/{{name}}",
+            type: "POST",
+            data: { name: "{{name}}", message: $("#message textarea").val() }
+        })
+        .done(function( data ) {
+            $("#message textarea").val('');
+        });
+    });
+});     
+</script>
+{% endif %}
+</body>
+</html>

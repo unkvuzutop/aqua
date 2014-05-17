@@ -1,6 +1,15 @@
 """
 aqua.app -- Async HTTP Application
 ==================================
+
+This module provides the HTTP Application which designed for using with the :mod:`asyncio`
+as describes :ref:`Transports and protocols (low-level API) <asyncio-protocol>`.
+Application instance is callable. It's prepares and returns instance of :class:`aqua.http.Connection`
+witch can be used with :meth:`asyncio.BaseEventLoop.create_server` to create HTTP server..
+
+See the sample below which demonstrates simple HTTP Application.
+
+.. literalinclude:: ../demo/helloworld.py
 """
 import asyncio
 import logging
@@ -29,9 +38,13 @@ def handler(route, method='GET', **options):
 
 
 class BaseApplication(object):
-    """ Base application class """
+    """ Base application class
     
-    router_class = TraversalRouter
+    :param loop: :mod:`asyncio` event loop instance to use.
+    :param script_name: Default 'SCRIPT_NAME' used for routing
+    """
+    
+    router_class = TraversalRouter #: Default router class
     
     def __init__(self, loop, script_name):
         self.loop = loop
@@ -87,10 +100,13 @@ class BaseApplication(object):
 class Application(BaseApplication):
     """ Application class
     
-    Application instance is callable. It's prepare and returns instance of :class:`aqua.http.Connection`
-    witch can be used with :meth:`asyncio.BaseEventLoop.create_server` to create HTTP server..
+    :param loop: :mod:`asyncio` event loop instance to use.
+        If not set default event loop instance will be used.
+    :server_name: SERVER_NAME request environ variable if None value from connection
+    :server_port: SERVER_PORT request environ variable if None value from connection
     """
-    def __init__(self, loop, server_name=None, server_port=None):
+    def __init__(self, loop=None, server_name=None, server_port=None):
+        self.loop = loop or asyncio.get_event_loop()
         BaseApplication.__init__(self, loop, '/')
         self._app_environ = dict()
         if server_name is not None:
